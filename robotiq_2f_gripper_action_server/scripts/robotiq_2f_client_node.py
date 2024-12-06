@@ -42,24 +42,30 @@ This serves as an example for publishing messages on the 'Robotiq2FGripperRobotO
 """
 
 from __future__ import print_function
+
+import sys
+
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 from std_msgs.msg import Bool
 import rospy
 from control_msgs.msg import GripperCommandAction, GripperCommandGoal
 import actionlib
+import argparse
 
 class Robotiq2fClient:
     def __init__(self, gripper_name="gripper") -> None:
         self.gripper_name = gripper_name
-
+        rospy.loginfo("gripper_name:{}".format(gripper_name))
         self.ac = actionlib.SimpleActionClient(gripper_name, GripperCommandAction)
         rospy.loginfo("Waiting for action server to start...")
         self.ac.wait_for_server()
+        rospy.sleep(2)
         rospy.loginfo("Action server started.")
-        self.goal_pub = rospy.Publisher("/gripper/output", outputMsg.Robotiq2FGripper_robot_output, queue_size=1)
+        self.goal_pub = rospy.Publisher("/{}/output".format(gripper_name), outputMsg.Robotiq2FGripper_robot_output, queue_size=1)
+        # self.goal_pub = rospy.Publisher("/gripper/output", outputMsg.Robotiq2FGripper_robot_output, queue_size=1)
         self.init_reset()
-
-        self.gripper_cmd_sub = rospy.Subscriber("/set_gripper_open", Bool, self.gripper_cmd_cb)
+        rospy.loginfo("Subscribing to /{}/set_gripper_open topic...".format(gripper_name))
+        self.gripper_cmd_sub = rospy.Subscriber("/{}/set_gripper_open".format(gripper_name), Bool, self.gripper_cmd_cb)
 
     def gripper_cmd_cb(self, msg: Bool):
         if msg.data == True:
@@ -165,9 +171,13 @@ def class_gripper_test():
 
 
 def main():
+    # parser = argparse.ArgumentParser(description="Robotiq 2F Gripper Client Node")
+    # parser.add_argument('--gripper_name', type=str, help='Gripper name', default='gripper')
+    # args = parser.parse_args(rospy.myargv()[1:])
+    # print(args)
     rospy.init_node("robotiq_client_node")
     rospy.sleep(0.3)
-    robotiq = Robotiq2fClient()
+    robotiq = Robotiq2fClient(gripper_name=sys.argv[1])
     rospy.spin()
 
 

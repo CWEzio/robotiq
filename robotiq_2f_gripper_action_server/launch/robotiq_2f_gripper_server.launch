@@ -11,14 +11,14 @@
 
   <group ns="$(arg gripper_name)" if="$(arg rtu)">
     <node name="robotiq_2f_gripper_action_server" pkg="robotiq_2f_gripper_control"
-      type="Robotiq2FGripperRtuNode.py" args="$(arg port)" >
+      type="Robotiq2FGripperRtuNode.py" args="$(arg port)">
       <remap from="Robotiq2FGripperRobotInput" to="input" />
       <remap from="Robotiq2FGripperRobotOutput" to="output" />
     </node>
   </group>
 
   <node name="robotiq_2f_gripper_action_server_$(arg gripper_name)" pkg="robotiq_2f_gripper_action_server"
-    type="robotiq_2f_gripper_action_server_node" output="screen">
+    type="robotiq_2f_gripper_action_server_node">
     <param name="gripper_name" type="str" value="$(arg gripper_name)" />
     <param name="min_gap" type="double" value="$(arg min_gap)" />
     <param name="max_gap" type="double" value="$(arg max_gap)" />
@@ -27,9 +27,6 @@
 
     <remap from="input" to="$(arg gripper_name)/input" />
     <remap from="output" to="$(arg gripper_name)/output" />
-  </node>
-
-  <node name="robotiq_2f_client_$(arg gripper_name)" pkg="robotiq_2f_gripper_action_server" type="robotiq_2f_client_node.py" output="screen" args="$(arg gripper_name)">
   </node>
 
 </launch>
