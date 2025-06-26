@@ -1,6 +1,9 @@
 # Robotiq
 
 ## Control robotiq_2f_gripper by serial port (robotiq->USB->PC or robotiq->URe serials tool communication)
+- library requirement: `pymodbus==2.1.0` 
+    > I have tested that `pymodbus==3.6.0` does not work
+
 ### Init
 
 ``` bash
@@ -12,16 +15,25 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 # check serial port
 ls /dev|grep ttyUSB
 ```
+
+Or a temporary solution
+
+```
+sudo chmod 666 /dev/ttyUSB0
+```
+Above permission is lost after every unplugging.
+
+
 ### (Option 1) listen to topic '/set_gripper_open', then publish it
 ``` bash
 # launch action server, action client
 roslaunch robotiq_2f_gripper_action_server robotiq_2f_gripper_as_client.launch port:=/dev/ttyUSB0
 
 # close gripper
-rostopic pub /set_gripper_open std_msgs/Bool "data: false" -1
+rostopic pub /gripper/set_gripper_open std_msgs/Bool "data: false" -1
 
 # open gripper
-rostopic pub /set_gripper_open std_msgs/Bool "data: true" -1
+rostopic pub /gripper/set_gripper_open std_msgs/Bool "data: true" -1
 ```
 
 ###  (Option 2) direct use client code in Python
@@ -30,11 +42,45 @@ rostopic pub /set_gripper_open std_msgs/Bool "data: true" -1
 roslaunch robotiq_2f_gripper_action_server robotiq_2f_gripper_action_server robotiq_2f_gripper_as.launch  port:=/dev/ttyUSB0
 # 2. use the code in robotiq_2f_gripper_action_server/scripts/robotiq_2f_client_node.py
 ```
+
+### (Option 3) Use `Robotiq2FGripperRtuNode.py` and `Robotiq2FGripperSimpleController.py`
+- In one terminal
+    ```
+    rosrun robotiq_2f_gripper_control Robotiq2FGripperRtuNode.py /dev/ttyUSB0
+    ```
+- In another terminal
+    ```
+    rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py
+    ```
+
 ## Control robotiq_2f_gripper by socket (robotiq->USB->UR Control Box)
 ``` bash
 # use the class Robotiq2FGripperURCapBridge in:
 robotiq_2f_gripper_control/src/robotiq_2f_gripper_control/robotiq_2f_gripper_urcap_bridge.py
 ```
+
+## Problem Shooting
+### `pymodbus` cannot connect with the gripper 
+- When 
+    ```
+    roslaunch robotiq_2f_gripper_action_server robotiq_2f_gripper_action_server robotiq_2f_gripper_as.launch  port:=/dev/ttyUSB0
+    ```
+    encounter the following error
+    ```
+    Traceback (most recent call last):
+    File "/home/chenwang/ros_cloth_manipulation/src/robotiq/robotiq_2f_gripper_control/nodes/Robotiq2FGripperRtuNode.py", line 119, in <module>
+        mainLoop(sys.argv[1])
+    File "/home/chenwang/ros_cloth_manipulation/src/robotiq/robotiq_2f_gripper_control/nodes/Robotiq2FGripperRtuNode.py", line 71, in mainLoop
+        gripper.client.connectToDevice(device)
+    File "/home/chenwang/ros_cloth_manipulation/src/robotiq/robotiq_modbus_rtu/src/robotiq_modbus_rtu/comModbusRtu.py", line 68, in connectToDevice
+        if not self.client.connect():
+    File "/home/chenwang/.local/lib/python3.8/site-packages/pymodbus/client/sync.py", line 476, in connect
+        self.socket.interCharTimeout = self.inter_char_timeout
+    AttributeError: 'NoneType' object has no attribute 'interCharTimeout'
+    ```
+- Cause 1: `pymodbus` version is not correct.
+- Cause 2: No permission to the gripper device.
+
 
 ## Status
 

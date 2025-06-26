@@ -11,7 +11,7 @@
 
   <group ns="$(arg gripper_name)" if="$(arg rtu)">
     <node name="robotiq_2f_gripper_action_server" pkg="robotiq_2f_gripper_control"
-      type="Robotiq2FGripperRtuNode.py" args="$(arg port)" >
+      type="Robotiq2FGripperRtuNode.py" args="$(arg port)" output="screen">
       <remap from="Robotiq2FGripperRobotInput" to="input" />
       <remap from="Robotiq2FGripperRobotOutput" to="output" />
     </node>

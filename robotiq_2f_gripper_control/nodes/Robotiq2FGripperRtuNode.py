@@ -51,11 +51,14 @@ import robotiq_modbus_rtu.comModbusRtu
 import os, sys
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input as inputMsg
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
+import pymodbus
 
 DEBUG = False
 
 
 def mainLoop(device):
+    print("pymodbus version: {}".format(pymodbus.__version__))
+    print("device: {}".format(device))
 
     # Gripper is a 2F with a TCP connection
     gripper = (
@@ -63,6 +66,7 @@ def mainLoop(device):
     )
     gripper.client = robotiq_modbus_rtu.comModbusRtu.communication()
 
+    print("try to connect with the device: {}".format(device))
     # We connect to the address received as an argument
     gripper.client.connectToDevice(device)
 
